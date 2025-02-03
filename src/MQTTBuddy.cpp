@@ -179,7 +179,7 @@ boolean MQTTBuddy::connect(const char *id, const char *user, const char *pass, c
 }
 
 boolean MQTTBuddy::connect(const char *id, const char *user, const char *pass, const char* willTopic, uint8_t willQos, boolean willRetain, const char* willMessage, boolean cleanSession) {
-    if (!connected()) {
+    if (!isConnected()) {
         int result = 0;
 
 
@@ -374,7 +374,7 @@ uint32_t MQTTBuddy::readPacket(uint8_t* lengthLength) {
 }
 
 boolean MQTTBuddy::loop() {
-    if (connected()) {
+    if (isConnected()) {
         unsigned long t = millis();
         if ((t - lastInActivity > this->keepAlive*1000UL) || (t - lastOutActivity > this->keepAlive*1000UL)) {
             if (pingOutstanding) {
@@ -429,7 +429,7 @@ boolean MQTTBuddy::loop() {
                 } else if (type == MQTT_PINGRESP) {
                     pingOutstanding = false;
                 }
-            } else if (!connected()) {
+            } else if (!isConnected()) {
                 // readPacket has closed the connection
                 return false;
             }
@@ -454,7 +454,7 @@ boolean MQTTBuddy::publish(const char* topic, const uint8_t* payload, unsigned i
 }
 
 boolean MQTTBuddy::publish(const char* topic, const uint8_t* payload, unsigned int plength, boolean retained) {
-    if (connected()) {
+    if (isConnected()) {
         if (this->bufferSize < MQTT_MAX_HEADER_SIZE + 2+strnlen(topic, this->bufferSize) + plength) {
             // Too long
             return false;
@@ -494,7 +494,7 @@ boolean MQTTBuddy::publish_P(const char* topic, const uint8_t* payload, unsigned
     unsigned int len;
     int expectedLength;
 
-    if (!connected()) {
+    if (!isConnected()) {
         return false;
     }
 
@@ -532,7 +532,7 @@ boolean MQTTBuddy::publish_P(const char* topic, const uint8_t* payload, unsigned
 }
 
 boolean MQTTBuddy::beginPublish(const char* topic, unsigned int plength, boolean retained) {
-    if (connected()) {
+    if (isConnected()) {
         // Send the header and variable length field
         uint16_t length = MQTT_MAX_HEADER_SIZE;
         length = writeString(topic, this->buffer, length);
@@ -627,7 +627,7 @@ boolean MQTTBuddy::subscribe(const char* topic, uint8_t qos) {
         // Too long
         return false;
     }
-    if (connected()) {
+    if (isConnected()) {
         // Leave room in the buffer for header and variable length field
         uint16_t length = MQTT_MAX_HEADER_SIZE;
         nextMsgId++;
@@ -652,7 +652,7 @@ boolean MQTTBuddy::unsubscribe(const char* topic) {
         // Too long
         return false;
     }
-    if (connected()) {
+    if (isConnected()) {
         uint16_t length = MQTT_MAX_HEADER_SIZE;
         nextMsgId++;
         if (nextMsgId == 0) {
@@ -679,7 +679,7 @@ uint16_t MQTTBuddy::writeString(const char* string, uint8_t* buf, uint16_t pos) 
     return pos;
 }
 
-boolean MQTTBuddy::connected() {
+boolean MQTTBuddy::isConnected() {
     boolean rc;
     if (_client == NULL ) {
         rc = false;

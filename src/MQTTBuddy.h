@@ -172,7 +172,7 @@ public:
    boolean subscribe(const char* topic, uint8_t qos);
    boolean unsubscribe(const char* topic);
    boolean loop();
-   boolean connected();
+   boolean isConnected();
    int state();
 
 };
