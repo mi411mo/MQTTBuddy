@@ -10,10 +10,20 @@
 #include "IPAddress.h"
 #include "Client.h"
 #include "Stream.h"
+//#include "WiFiClientSecure.h"
 
 // Supported MQTT versions
 #define MQTT_VERSION_3_1      3
 #define MQTT_VERSION_3_1_1    4
+
+// for the tls/ssl connection
+#define MQTT_NO_TLS_PORT 1883
+#define MQTT_TLS_PORT 8883
+
+// default to no tls
+#ifndef MQTT_PORT
+#define MQTT_PORT MQTT_NO_TLS_PORT
+#endif
 
 // MQTT_VERSION : Pick the version
 #ifndef MQTT_VERSION
@@ -47,7 +57,7 @@
 #define MQTT_CONNECT_BAD_CREDENTIALS 4
 #define MQTT_CONNECT_UNAUTHORIZED    5
 
-
+// header flags
 #define MQTT_CONNECT     1 << 4  // Client request to connect to Server
 #define MQTT_CONNACK     2 << 4  // Connect Acknowledgment
 #define MQTT_PUBLISH     3 << 4  // Publish message
@@ -93,6 +103,15 @@ private:
    unsigned long lastOutActivity;
    unsigned long lastInActivity;
    bool pingOutstanding;
+   IPAddress ip;
+   const char* domain;
+   uint16_t port;
+   Stream* stream;
+   int _state = MQTT_DISCONNECTED;
+
+   // for the tls/ssl connection
+   //WiFiClientSecure *secureClient = nullptr;
+
    MQTT_CALLBACK_SIGNATURE;
    uint32_t readPacket(uint8_t*);
    boolean readByte(uint8_t * result);
@@ -104,11 +123,6 @@ private:
    // Note: the header is built at the end of the first MQTT_MAX_HEADER_SIZE bytes, so will start
    //       (MQTT_MAX_HEADER_SIZE - <returned size>) bytes into the buffer
    size_t buildHeader(uint8_t header, uint8_t* buf, uint16_t length);
-   IPAddress ip;
-   const char* domain;
-   uint16_t port;
-   Stream* stream;
-   int _state = MQTT_DISCONNECTED;
 public:
    MQTTBuddy();
    MQTTBuddy(Client& client);
